@@ -86,30 +86,35 @@ def depthFirstSearch(problem):
     # print "Start's successors:", problem.getSuccessors(problem.getStartState())
     # """
     #util.raiseNotDefined()
-    myStack = util.Stack()
+    #Declare a Stack and list
+    Frontier = util.Stack()
     Visited = []
+    #The begin state
     begin = problem.getStartState()
-    myStack.push((begin, []))
-    while myStack.isEmpty() == 0:
-      state, actions = myStack.pop()
+    Frontier.push((begin, []))
+    while Frontier.isEmpty() == 0:
+      #Consider the top item of the Stack
+      state, actions = Frontier.pop()
+
       if state not in Visited:
         if problem.isGoalState(state):
           print "Found Goal with DFS"
           return actions
         else:
           Visited.append(state)
+          # Add child of the state to the Stack
           for next_branch in problem.getSuccessors(state)[::-1]:
-            myStack.push((next_branch[0], actions+[next_branch[1]]))
+            Frontier.push((next_branch[0], actions+[next_branch[1]]))
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    myQueue = util.Queue()
+    Frontier = util.Queue()
     Visited = []
     begin = problem.getStartState()
-    myQueue.push((begin, []))
-    while myQueue.isEmpty() == 0:
-      state, actions = myQueue.pop()
+    Frontier.push((begin, []))
+    while Frontier.isEmpty() == 0:
+      state, actions = Frontier.pop()
       if state not in Visited:
         if problem.isGoalState(state):
           print "Found Goal with BFS"
@@ -117,7 +122,7 @@ def breadthFirstSearch(problem):
         else:
           Visited.append(state)
           for next_branch in problem.getSuccessors(state):
-            myQueue.push((next_branch[0], actions+[next_branch[1]]))
+            Frontier.push((next_branch[0], actions+[next_branch[1]]))
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
