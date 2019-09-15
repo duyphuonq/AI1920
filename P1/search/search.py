@@ -156,10 +156,15 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not Frontier.isEmpty():
       state, actions = Frontier.pop()
       if problem.isGoalState(state):
+        print "Found Goal with Astar"
         return actions
       if state not in Visited:
         Visited.append(state)
-
+      for next_branch in problem.getSuccessors(state):
+        n_state = next_branch[0]
+        n_actions = next_branch[1]
+        if n_state not in Visited:
+          Frontier.update((n_state, actions+[n_actions]), problem.getCostOfActions(actions+[n_actions]) + heuristic(n_state, problem))      
 
 # Abbreviations
 bfs = breadthFirstSearch
