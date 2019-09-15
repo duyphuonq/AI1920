@@ -18,6 +18,8 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+import heapq
+
 
 class SearchProblem:
     """
@@ -127,6 +129,17 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    def myUpdate(Frontier, item, priority):
+      for index, (p, c, i) in enumerate(Frontier.heap):
+        if i[0] == item[0]:
+          if p <= priority:
+            break
+          del Frontier.heap[index]
+          Frontier.heap.append((priority, c, item))
+          heapq.heapify(Frontier.heap)
+          break
+      else:
+        Frontier.push(item, priority)
     Frontier = util.PriorityQueue()
     Visited = []
     begin = problem.getStartState()
@@ -142,7 +155,7 @@ def uniformCostSearch(problem):
         n_state = next_branch[0]
         n_actions = next_branch[1]
         if n_state not in Visited:
-          Frontier.update((n_state, actions+[n_actions]), problem.getCostOfActions(actions+[n_actions]))
+          myUpdate(Frontier, (n_state, actions+[n_actions]), problem.getCostOfActions(actions+[n_actions]))
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -153,6 +166,17 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    def myUpdate(Frontier, item, priority):
+      for index, (p, c, i) in enumerate(Frontier.heap):
+        if i[0] == item[0]:
+          if p <= priority:
+            break
+          del Frontier.heap[index]
+          Frontier.heap.append((priority, c, item))
+          heapq.heapify(Frontier.heap)
+          break
+      else:
+        Frontier.push(item, priority)
     Frontier = util.PriorityQueue()
     Visited = []
     begin = problem.getStartState()
@@ -169,7 +193,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         n_state = next_branch[0]
         n_actions = next_branch[1]
         if n_state not in Visited:
-          Frontier.update((n_state, actions+[n_actions]), problem.getCostOfActions(actions+[n_actions]) + heuristic(n_state, problem))      
+          myUpdate(Frontier, (n_state, actions+[n_actions]), problem.getCostOfActions(actions+[n_actions]) + heuristic(n_state, problem))      
 
 # Abbreviations
 bfs = breadthFirstSearch
