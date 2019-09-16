@@ -123,6 +123,7 @@ def breadthFirstSearch(problem):
           return actions
         else:
           Visited.append(state)
+          #print problem.getSuccessors(state)
           for next_branch in problem.getSuccessors(state):
             Frontier.push((next_branch[0], actions+[next_branch[1]]))
 
