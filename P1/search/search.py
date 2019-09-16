@@ -100,7 +100,7 @@ def depthFirstSearch(problem):
 
       if state not in Visited:
         if problem.isGoalState(state):
-          print "Found Goal with DFS"
+          #print "Found Goal with DFS"
           return actions
         else:
           Visited.append(state)
@@ -119,7 +119,7 @@ def breadthFirstSearch(problem):
       state, actions = Frontier.pop()
       if state not in Visited:
         if problem.isGoalState(state):
-          print "Found Goal with BFS"
+          #print "Found Goal with BFS"
           return actions
         else:
           Visited.append(state)
@@ -148,7 +148,7 @@ def uniformCostSearch(problem):
     while not Frontier.isEmpty():
       state, actions = Frontier.pop()
       if problem.isGoalState(state):
-        print "Found Goal with UCS"
+        #print "Found Goal with UCS"
         return actions
       if state not in Visited:
         Visited.append(state)
@@ -186,7 +186,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not Frontier.isEmpty():
       state, actions = Frontier.pop()
       if problem.isGoalState(state):
-        print "Found Goal with Astar"
+        #print "Found Goal with Astar"
         return actions
       if state not in Visited:
         Visited.append(state)
