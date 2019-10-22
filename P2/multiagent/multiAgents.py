@@ -76,19 +76,18 @@ class ReflexAgent(Agent):
         "*** YOUR CODE HERE ***"
         foodPos = newFood.asList()
         foodCount = len(foodPos)
-        minDistance = 1e6
-        for i in range(foodCount):
-          distance = manhattanDistance(foodPos[i],newPos) + foodCount*500
-          if distance < minDistance:
-            minDistance = distance
+        minDis = 10**6
         if foodCount == 0:
-          minDistance = 0
-        score = -minDistance
+          minDis = 0
+        else:
+          distance = min([manhattanDistance(foodPos[i], newPos) + foodCount*100 for i in range(foodCount)])
+          if distance < minDis:
+            minDis = distance
+        score = -minDis
         for i in range(len(newGhostStates)):
           ghostPos = successorGameState.getGhostPosition(i+1)
-          #print ghostPos
-          if manhattanDistance(newPos,ghostPos)<=1 and newScaredTimes[i] == 0:
-            score -= 1e7
+          if manhattanDistance(newPos,ghostPos)<=1 :
+            score -= 10**6
         return score 
 
 def scoreEvaluationFunction(currentGameState):
@@ -144,35 +143,27 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         numAgents = gameState.getNumAgents()
+        #print numAgents
         scores = []
-
-        def _rmStop(list):
-          #print list
-          return [x for x in list if x != 'Stop']
-
         def _minimax(s, iterCount):
           if iterCount >= self.depth*numAgents or s.isWin() or s.isLose():
             return self.evaluationFunction(s)
-          if iterCount%numAgents != 0:    #Ghost min
-            result = 1e10
-            choose_min = iterCount%numAgents
-            for action in _rmStop(s.getLegalActions(choose_min)):
-              successors = s.generateSuccessor(choose_min, action)
-              #print "hihi"
+          if iterCount%numAgents != 0:    #is ghost
+            result = 10**10
+            for action in s.getLegalActions(iterCount%numAgents):
+              successors = s.generateSuccessor(iterCount%numAgents, action)
               result = min(result, _minimax(successors, iterCount+1))
             return result
-          else:
-            result = -1e10
-            choose_max = iterCount%numAgents
-            for action in _rmStop(s.getLegalActions(choose_max)):
-              successors = s.generateSuccessor(choose_max, action)
-              #print "haha"
+          else:   #is Pacman
+            result = -10**10
+            for action in s.getLegalActions(iterCount%numAgents):
+              successors = s.generateSuccessor(iterCount%numAgents, action)
               result = max(result, _minimax(successors, iterCount+1))
               if iterCount == 0:
                 scores.append(result)
             return result
         result = _minimax(gameState, 0)
-        return _rmStop(gameState.getLegalActions(0))[scores.index(max(scores))]
+        return gameState.getLegalActions(0)[scores.index(max(scores))]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -186,17 +177,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         numAgents = gameState.getNumAgents()
         scores = []
-
-        def _rmStop(list):
-          return [x for x in list if x != 'Stop']
-
         def _alphaBeta(s, iterCount, alpha, beta):
           if iterCount >= self.depth*numAgents or s.isWin() or s.isLose():
             return self.evaluationFunction(s)
           if iterCount%numAgents != 0:    #Ghost min
-            result = 1e10
+            result = 10**10
             choose_min = iterCount%numAgents
-            for action in _rmStop(s.getLegalActions(choose_min)):
+            for action in s.getLegalActions(choose_min):
               successors = s.generateSuccessor(choose_min, action)
               #print "hihi"
               result = min(result, _alphaBeta(successors, iterCount+1, alpha, beta))
@@ -205,9 +192,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 break
             return result
           else:
-            result = -1e10
+            result = -10**10
             choose_max = iterCount%numAgents
-            for action in _rmStop(s.getLegalActions(choose_max)):
+            for action in s.getLegalActions(choose_max):
               successors = s.generateSuccessor(choose_max, action)
               #print "haha"
               result = max(result, _alphaBeta(successors, iterCount+1, alpha, beta))
@@ -217,9 +204,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
               if beta < alpha:
                 break
             return result
-        result = _alphaBeta(gameState, 0, -1e20, 1e20)
-        return _rmStop(gameState.getLegalActions(0))[scores.index(max(scores))]
-        util.raiseNotDefined()
+        result = _alphaBeta(gameState, 0, -10**20, 10**20)
+        return gameState.getLegalActions(0)[scores.index(max(scores))]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -234,7 +220,32 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+        ActionScore = []
+
+        def _expectMinimax(s, iterCount):
+          if iterCount >= self.depth*numAgents or s.isWin() or s.isLose(): #leaf node
+            return self.evaluationFunction(s)
+          if iterCount%numAgents != 0: #is Ghost 
+            successorScore = []
+            for a in s.getLegalActions(iterCount%numAgents):
+              new_gameState = s.generateSuccessor(iterCount%numAgents,a)
+              result = _expectMinimax(new_gameState, iterCount+1)
+              successorScore.append(result)
+            averageScore = sum([ float(x)/len(successorScore) for x in successorScore])
+            return averageScore
+          else: #is Pacman
+            result = -10**10
+            for a in s.getLegalActions(iterCount%numAgents):
+              new_gameState = s.generateSuccessor(iterCount%numAgents,a)
+              result = max(result, _expectMinimax(new_gameState, iterCount+1))
+              if iterCount == 0:
+                ActionScore.append(result)
+            return result
+      
+        result = _expectMinimax(gameState, 0)
+        return gameState.getLegalActions(0)[ActionScore.index(max(ActionScore))]
+        
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -243,7 +254,37 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    def _ghostHunting(gameState):
+      score = 0
+      for ghost in gameState.getGhostStates():
+        disGhost = manhattanDistance(gameState.getPacmanPosition(), ghost.getPosition())
+        if ghost.scaredTimer > 0:
+          score += pow(max(8 - disGhost, 0), 2)
+        else:
+          score -= pow(max(7 - disGhost, 0), 2)
+      return score
+
+    def _foodGobbling(gameState):
+      disFood = []
+      for food in gameState.getFood().asList():
+        disFood.append(1.0/manhattanDistance(gameState.getPacmanPosition(), food))
+      if len(disFood)>0:
+        return max(disFood)
+      else:
+        return 0
+
+    def _pelletNabbing(gameState):
+      score = []
+      for Cap in gameState.getCapsules():
+        score.append(50.0/manhattanDistance(gameState.getPacmanPosition(), Cap))
+      if len(score) > 0:
+        return max(score)
+      else:
+        return 0
+    score = currentGameState.getScore()
+    return score + _ghostHunting(currentGameState) \
+                  + _foodGobbling(currentGameState) \
+                    + _pelletNabbing(currentGameState)
 
 # Abbreviation
 better = betterEvaluationFunction
